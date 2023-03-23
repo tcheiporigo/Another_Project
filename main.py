@@ -1,61 +1,38 @@
-from kivy.lang import Builder
-
 from kivymd.app import MDApp
-from kivymd.uix.label import MDLabel
-from kivymd.uix.responsivelayout import MDResponsiveLayout
-from kivymd.uix.screen import MDScreen
+from kivymd.uix.screenmanager import MDScreenManager
 
-KV = '''
-<CommonComponentLabel>
-    halign: "center"
+from View.screens import screens
 
 
-<MobileView>
-    CommonComponentLabel:
-        text: "Mobile"
+class EmotionApp(MDApp):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.load_all_kv_files(self.directory)
+        # This is the screen manager that will contain all the screens of your
+        # application.
+        self.manager_screens = MDScreenManager()
+
+    def build(self) -> MDScreenManager:
+        self.generate_application_screens()
+        return self.manager_screens
+
+    def generate_application_screens(self) -> None:
+        """
+        Creating and adding screens to the screen manager.
+        You should not change this cycle unnecessarily. He is self-sufficient.
+
+        If you need to add any screen, open the `View.screens.py` module and
+        see how new screens are added according to the given application
+        architecture.
+        """
+
+        for i, name_screen in enumerate(screens.keys()):
+            model = screens[name_screen]["model"]()
+            controller = screens[name_screen]["controller"](model)
+            view = controller.get_view()
+            view.manager_screens = self.manager_screens
+            view.name = name_screen
+            self.manager_screens.add_widget(view)
 
 
-<TabletView>
-    CommonComponentLabel:
-        text: "Table"
-
-
-<DesktopView>
-    CommonComponentLabel:
-        text: "Desktop"
-
-
-ResponsiveView:
-'''
-
-
-class CommonComponentLabel(MDLabel):
-    pass
-
-
-class MobileView(MDScreen):
-    pass
-
-
-class TabletView(MDScreen):
-    pass
-
-
-class DesktopView(MDScreen):
-    pass
-
-
-class ResponsiveView(MDResponsiveLayout, MDScreen):
-    def __init__(self, **kw):
-        super().__init__(**kw)
-        self.mobile_view = MobileView()
-        self.tablet_view = TabletView()
-        self.desktop_view = DesktopView()
-
-
-class Test(MDApp):
-    def build(self):
-        return Builder.load_string(KV)
-
-
-Test().run()
+EmotionApp().run()
